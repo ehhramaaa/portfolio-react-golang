@@ -1,0 +1,4 @@
+client/node_modules
+tmp
+.env
+firebase.json
