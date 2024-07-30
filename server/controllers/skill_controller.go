@@ -10,7 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func GetHome(c *fiber.Ctx, firebaseApp *firebase.App, homeCollectionName *string, homeDocumentID *string) error {
+func GetSkill(c *fiber.Ctx, firebaseApp *firebase.App, skillsCollectionName *string, skillsDocumentID *string) error {
 	ctx := context.Background()
 	client, err := firebaseApp.Firestore(ctx)
 	if err != nil {
@@ -20,23 +20,23 @@ func GetHome(c *fiber.Ctx, firebaseApp *firebase.App, homeCollectionName *string
 
 	defer client.Close()
 
-	var home models.Home
+	var Skill models.Skill
 
-	doc, err := client.Collection(*homeCollectionName).Doc(*homeDocumentID).Get(ctx)
+	doc, err := client.Collection(*skillsCollectionName).Doc(*skillsDocumentID).Get(ctx)
 	if err != nil {
 		log.Fatalf("Failed To Get Document : %v", err)
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 
-	if err := doc.DataTo(&home); err != nil {
+	if err := doc.DataTo(&Skill); err != nil {
 		log.Fatalf("Failed To Map Firestore Data To Struct : %v", err)
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(home)
+	return c.Status(fiber.StatusOK).JSON(Skill)
 }
 
-func PostHome(c *fiber.Ctx, firebaseApp *firebase.App, homeCollectionName *string, homeDocumentID *string) error {
+func PostSkill(c *fiber.Ctx, firebaseApp *firebase.App, skillsCollectionName *string, skillsDocumentID *string) error {
 	ctx := context.Background()
 	client, err := firebaseApp.Firestore(ctx)
 
@@ -47,30 +47,34 @@ func PostHome(c *fiber.Ctx, firebaseApp *firebase.App, homeCollectionName *strin
 
 	defer client.Close()
 
-	var home models.Home
+	var Skill models.Skill
 
-	if err := c.BodyParser(&home); err != nil {
+	if err := c.BodyParser(&Skill); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Invalid Request Payload")
 	}
 
-	if home.Desc == "" {
-		return c.Status(400).JSON(fiber.Map{"error": "Home Desc Is Require"})
+	if Skill.Title == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "Skill Title Is Require"})
 	}
 
-	if home.Experience == "" {
-		return c.Status(400).JSON(fiber.Map{"error": "Home Experience Is Require"})
+	if Skill.Desc == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "Skill Desc Is Require"})
 	}
 
-	_, err = client.Collection(*homeCollectionName).Doc(*homeDocumentID).Set(ctx, home)
+	if Skill.Cv == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "Skill CV Is Require"})
+	}
+
+	_, err = client.Collection(*skillsCollectionName).Doc(*skillsDocumentID).Set(ctx, Skill)
 	if err != nil {
 		log.Fatalf("Failed To Save Document : %v", err)
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(home)
+	return c.Status(fiber.StatusCreated).JSON(Skill)
 }
 
-func PatchHome(c *fiber.Ctx, firebaseApp *firebase.App, homeCollectionName *string, homeDocumentID *string) error {
+func PatchSkill(c *fiber.Ctx, firebaseApp *firebase.App, skillsCollectionName *string, skillsDocumentID *string) error {
 	ctx := context.Background()
 	client, err := firebaseApp.Firestore(ctx)
 
@@ -87,7 +91,7 @@ func PatchHome(c *fiber.Ctx, firebaseApp *firebase.App, homeCollectionName *stri
 		return c.Status(fiber.StatusInternalServerError).SendString("Invalid Request Payload")
 	}
 
-	_, err = client.Collection(*homeCollectionName).Doc(*homeDocumentID).Update(ctx, utils.FirestoreUpdate(updateData))
+	_, err = client.Collection(*skillsCollectionName).Doc(*skillsDocumentID).Update(ctx, utils.FirestoreUpdate(updateData))
 
 	if err != nil {
 		log.Fatalf("Failed To Update Document : %v", err)
